@@ -5,10 +5,18 @@
         <title>Webpack App</title>
     </head>
     <body>
-        <input type="text" placeholder="Ссылка RSS"/>
-        <button>Добавить</button>
+        <div class="container">
+            <form class="form-body">
+                <input type="text" class="form-control" aria-label="url" placeholder="Ссылка RSS"/>
+                <button type="submit" class="form-submit">Добавить</button>
+            </form>
+            <p>Пример: https://lorem-rss.hexlet.app/feed</p>
+            <!-- <p class="valid-message">RSS успешно загружен</p>
+            <p class="invalid-message">RSS уже существует</p>
+            <p class="exist-message">Ссылка должна быть валидным URL</p> -->
+        </div> 
     </body>
-    
+    <script src="src/index.js"></script> 
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
