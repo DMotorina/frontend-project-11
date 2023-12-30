@@ -1,33 +1,27 @@
-import view from './view';
+import i18next from 'i18next';
+import ru from './locales/ru';
+import render from './render';
 
 export default () => {
-  const elements = {
-    container: document.querySelector('.container'),
-    form: document.querySelector('.form-body'),
-    inputField: document.querySelector('.form-control'),
-    submitButton: document.querySelector('.form-submit'),
+  const i18nextInstance = i18next.createInstance();
+
+  const initializeI18next = () => {
+    const promise = i18nextInstance.init({
+      lng: 'ru',
+      debug: true,
+      resources: {
+        ru,
+      },
+    })
+      .then(() => i18nextInstance);
+    return promise;
   };
 
-  const init = () => ({
-    formValue: elements.inputField.value,
-    existingURL: {},
-    validationStatus: 'success',
-    getRssStatus: '',
-    getRssSuccessText: '',
-    getRssError: '',
-    links: [],
-  });
-
-  const state = init();
-
-  elements.inputField.addEventListener('input', () => {
-    state.formValue = elements.inputField.value;
-  });
-
-  elements.form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const URL = elements.inputField.value;
-    view(elements, state, URL);
-  });
+  initializeI18next()
+    .then(() => {
+      render(i18nextInstance);
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
