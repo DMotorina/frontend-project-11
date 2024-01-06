@@ -1,31 +1,61 @@
 import * as yup from 'yup';
+import axios from 'axios';
 import _ from 'lodash';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import initView from './view';
 import resources from './locales/index';
-import parse from './parse';
+import Parser from './parse';
+import initialState from './state';
+
+const getProxiedUrl = (url) => {
+  const resultUrl = new URL('https://allorigins.hexlet.app/get');
+  resultUrl.searchParams.set('url', url);
+  resultUrl.searchParams.set('disableCache', true);
+  return resultUrl;
+};
+
+const getData = (data) => axios.get(getProxiedUrl(data));
+
+const makeSchema = (validatedLinks) => yup.string()
+  .required()
+  .url()
+  .notOneOf(validatedLinks);
+
+const setPosts = (posts, watchedState) => {
+  watchedState.posts.push(...posts);
+};
+
+const setFeed = (feed, watchedState) => {
+  watchedState.feeds.push(feed);
+};
+
+const updatePosts = (watchedState) => {
+  const promises = watchedState.feeds.map((feed) => getData(feed.id));
+  return Promise.all(promises)
+    .then((response) => {
+      response.forEach((element) => {
+        const parser = new Parser(element.data.contents, element.data.status.url);
+        const { posts, feed } = parser;
+        const postsFromState = watchedState.posts;
+        const postsWithCurrentId = postsFromState.filter((post) => post.feedId === feed.id);
+        const displayedPostLinks = postsWithCurrentId.map((post) => post.link);
+        const newPosts = posts.filter((post) => !displayedPostLinks.includes(post.link));
+
+        if (newPosts.length === 0) {
+          return;
+        }
+
+        watchedState.posts.unshift(...newPosts);
+      });
+    })
+    .catch((error) => {
+      watchedState.form.error = error.message;
+    })
+    .finally(() => setTimeout(updatePosts, 5000, watchedState));
+};
 
 export default () => {
-  const state = {
-    form: {
-      field: {
-        url: '',
-      },
-      allUrls: [],
-      processState: '',
-      error: {},
-      parsed: {},
-    },
-  };
-
-  const i18n = i18next.createInstance();
-  i18n.init({
-    lng: 'ru',
-    debug: false,
-    resources,
-  });
-
   yup.setLocale({
     mixed: {
       notOneOf: () => ({ key: 'dublicateError' }),
@@ -40,50 +70,47 @@ export default () => {
     input: document.querySelector('#url-input'),
     feedback: document.querySelector('.feedback'),
     submit: document.querySelector('button[type="submit"]'),
-    feeds: document.querySelector('.feeds'),
-    posts: document.querySelector('.posts'),
+    feedsList: document.querySelector('.feeds'),
+    postsList: document.querySelector('.posts'),
   };
 
-  const watchedState = onChange(state, initView(elements, i18n, state));
+  const i18n = i18next.createInstance();
+  i18n.init({
+    lng: 'ru',
+    debug: false,
+    resources,
+  })
 
-  elements.form.addEventListener('submit', (event) => {
-    event.preventDefault();
+    .then(() => {
+      const watchedState = onChange(initialState, initView(elements, i18n, initialState));
 
-    const formData = new FormData(event.target);
-    const value = (formData.get('url')).trim();
+      elements.form.addEventListener('submit', (event) => {
+        event.preventDefault();
 
-    watchedState.form.field.url = value;
+        const formData = new FormData(event.target);
+        const value = (formData.get('url')).trim();
+        const urls = initialState.feeds.map((feed) => feed.id);
 
-    const urls = state.form.allUrls.map(({ url }) => url);
-    const schema = yup.string()
-      .url()
-      .notOneOf(urls);
+        const schema = makeSchema(urls);
 
-    const validated = (url) => {
-      watchedState.form.allUrls.push({ url, feedId: _.uniqueId() });
-      watchedState.form.field.url = '';
-      watchedState.form.processState = 'sending';
-      watchedState.form.error = {};
-    };
-
-    schema.validate(value)
-      .then((url) => {
-        validated(url);
-        fetch(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}`)
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            }
-
-            throw new Error('Network response was not ok.');
+        schema.validate(value)
+          .then(() => {
+            watchedState.form.processState = 'sending';
+            watchedState.form.error = null;
+            return getData(value);
           })
-          .then((data) => {
-            parse(data, watchedState, url);
+          .then((response) => {
+            const parser = new Parser(response.data.contents, value);
+            setFeed(parser.feed, watchedState);
+            setPosts(parser.posts, watchedState);
+
+            watchedState.form.processState = 'success';
+          })
+          .catch((error) => {
+            watchedState.form.error = error.message;
+            return _.keyBy(error.inner, 'path');
           });
-      })
-      .catch((error) => {
-        watchedState.form.error = error.message;
-        return _.keyBy(error.inner, 'path');
       });
-  });
+      updatePosts(watchedState);
+    });
 };

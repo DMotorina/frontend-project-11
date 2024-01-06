@@ -18,8 +18,8 @@ const renderErrorsHandler = (alert, elements, i18n) => {
 };
 
 const successRenderPosts = (elements, state, i18n) => {
-  const { parsed } = state.form;
-  const { posts } = elements;
+  const { posts } = state;
+  const { postsList } = elements;
 
   const divCard = document.createElement('div');
   divCard.classList.add('card', 'border-0');
@@ -35,7 +35,7 @@ const successRenderPosts = (elements, state, i18n) => {
   const ulCard = document.createElement('ul');
   ulCard.classList.add('list-group', 'border-0', 'rounded-0');
 
-  const liCards = parsed.posts.map((post) => {
+  const liCards = posts.flat().map((post) => {
     const postCount = _.uniqueId();
 
     const liCard = document.createElement('li');
@@ -86,49 +86,54 @@ const successRenderPosts = (elements, state, i18n) => {
 
   divCard.append(divCardBody);
   divCard.append(ulCard);
-  posts.append(divCard);
+  postsList.innerHTML = '';
+  postsList.append(divCard);
 };
 
 const successRenderFeeds = (elements, state, i18n) => {
-  const { parsed } = state.form;
-  const { feeds } = elements;
-  const divCard = document.createElement('div');
-  divCard.classList.add('card', 'border-0');
+  const { feeds } = state;
+  const { feedsList } = elements;
 
-  const divCardBody = document.createElement('div');
-  divCardBody.classList.add('card-body');
+  feeds.map((feed) => {
+    const divCard = document.createElement('div');
+    divCard.classList.add('card', 'border-0');
 
-  const headerFeedsCard = document.createElement('h2');
-  headerFeedsCard.classList.add('card-title', 'h4');
-  headerFeedsCard.textContent = i18n.t('feeds');
+    const divCardBody = document.createElement('div');
+    divCardBody.classList.add('card-body');
 
-  divCardBody.append(headerFeedsCard);
+    const headerFeedsCard = document.createElement('h2');
+    headerFeedsCard.classList.add('card-title', 'h4');
+    headerFeedsCard.textContent = i18n.t('feeds');
 
-  const ulCard = document.createElement('ul');
-  ulCard.classList.add('list-group', 'border-0', 'rounded-0');
+    divCardBody.append(headerFeedsCard);
 
-  const liCard = document.createElement('li');
-  liCard.classList.add('list-group-item', 'border-0', 'border-end-0');
+    const ulCard = document.createElement('ul');
+    ulCard.classList.add('list-group', 'border-0', 'rounded-0');
 
-  const h3Li = document.createElement('h3');
-  h3Li.classList.add('h6', 'm-0');
-  h3Li.textContent = parsed.feed.title;
+    const liCard = document.createElement('li');
+    liCard.classList.add('list-group-item', 'border-0', 'border-end-0');
 
-  const pLi = document.createElement('p');
-  pLi.classList.add('m-0', 'small', 'text-black-50');
-  pLi.textContent = parsed.feed.description;
+    const h3Li = document.createElement('h3');
+    h3Li.classList.add('h6', 'm-0');
+    h3Li.textContent = feed.title;
 
-  liCard.append(h3Li);
-  liCard.append(pLi);
+    const pLi = document.createElement('p');
+    pLi.classList.add('m-0', 'small', 'text-black-50');
+    pLi.textContent = feed.description;
 
-  ulCard.append(liCard);
+    liCard.append(h3Li);
+    liCard.append(pLi);
 
-  divCard.append(divCardBody);
-  divCard.append(ulCard);
-  feeds.append(divCard);
+    ulCard.append(liCard);
+
+    divCard.append(divCardBody);
+    divCard.append(ulCard);
+    feedsList.append(divCard);
+    return feedsList;
+  });
 };
 
-const handleProcessState = (elements, process, state, i18n) => {
+const handleProcessState = (elements, process) => {
   switch (process) {
     case 'sending':
       elements.form.reset();
@@ -138,8 +143,6 @@ const handleProcessState = (elements, process, state, i18n) => {
     case 'success':
       elements.form.reset();
       elements.form.focus();
-      successRenderFeeds(elements, state, i18n);
-      successRenderPosts(elements, state, i18n);
       break;
 
     default:
@@ -156,7 +159,12 @@ export default (elements, i18n, state) => (path, value) => {
     case 'form.error':
       renderErrorsHandler(value, elements, i18n);
       break;
-
+    case 'posts':
+      successRenderPosts(elements, state, i18n);
+      break;
+    case 'feeds':
+      successRenderFeeds(elements, state, i18n);
+      break;
     default:
       break;
   }

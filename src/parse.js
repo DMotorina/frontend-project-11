@@ -1,33 +1,25 @@
-export default (data, watchedState, url) => {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(data.contents, 'text/xml');
-  const feedTitle = doc.querySelector('title').textContent;
-  const feedDescription = doc.querySelector('description').textContent;
-  const items = doc.querySelectorAll('item');
+export default class {
+  constructor(data, url) {
+    this.doc = (new DOMParser()).parseFromString(data, 'text/xml');
+    this.url = url;
+  }
 
-  const posts = [];
+  get posts() {
+    return [...this.doc.querySelectorAll('item')].map((item) => ({
+      link: item.querySelector('link').textContent,
+      title: item.querySelector('title').textContent,
+      description: item.querySelector('description').textContent,
+      date: item.querySelector('pubDate').textContent,
+      id: item.querySelector('guid').textContent,
+      feedId: this.url,
+    }));
+  }
 
-  items.forEach((item) => {
-    const title = item.querySelector('title').textContent;
-    const description = item.querySelector('description').textContent;
-    const link = item.querySelector('link').textContent;
-    const pubDate = item.querySelector('pubDate').textContent;
-    posts.push({
-      title,
-      description,
-      link,
-      pubDate,
-    });
-  });
-
-  watchedState.form.parsed = {
-    feed: {
-      url,
-      title: feedTitle,
-      description: feedDescription,
-    },
-    posts,
-  };
-
-  watchedState.form.processState = 'success';
-};
+  get feed() {
+    return {
+      id: this.url,
+      title: this.doc.querySelector('title').textContent,
+      description: this.doc.querySelector('description').textContent,
+    };
+  }
+}
