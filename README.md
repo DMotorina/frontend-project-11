@@ -4,10 +4,8 @@
 
 [![Actions Status](https://github.com/DMotorina/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DMotorina/frontend-project-11/actions)
 
-## RSS агрегатор
-
 ## Description
-Simple feed aggregator, which collect RSS feeds and then watched for a new posts.
+RSS aggregator - it's a simple feed aggregator, which collect RSS feeds and then watched for a new posts.
 
 ## Requirements
 The minimum version of node.js - 13.2.0
