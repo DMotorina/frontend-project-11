@@ -8,8 +8,10 @@ export default {
     urlError: 'Ссылка должна быть валидным URL',
     rssError: 'Ресурс не содержит валидный RSS',
     dublicateError: 'RSS уже существует',
-    feeds: 'Фиды',
-    posts: 'Посты',
+    items: {
+      feeds: 'Фиды',
+      posts: 'Посты',
+    },
     viewing: 'Просмотр',
   },
 };

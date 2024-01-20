@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import initView from './view';
 import resources from './locales/index';
 import Parser from './parse';
-import initialState from './state';
+import { initialState } from './constants';
 
 const getProxiedUrl = (url) => {
   const resultUrl = new URL('https://allorigins.hexlet.app/get');
@@ -22,22 +22,14 @@ const makeSchema = (validatedLinks) => yup.string()
   .url()
   .notOneOf(validatedLinks);
 
-const setPosts = (posts, watchedState) => {
-  watchedState.posts.push(...posts);
-};
-
-const setFeed = (feed, watchedState) => {
-  watchedState.feeds.push(feed);
-};
-
-const updatePosts = (watchedState) => {
-  const promises = watchedState.feeds.map((feed) => getData(feed.id));
+const updatePosts = (state) => {
+  const promises = state.feeds.map((feed) => getData(feed.id));
   return Promise.all(promises)
     .then((response) => {
       response.forEach((element) => {
         const parser = new Parser(element.data.contents, element.data.status.url);
         const { posts, feed } = parser;
-        const postsFromState = watchedState.posts;
+        const postsFromState = state.posts;
         const postsWithCurrentId = postsFromState.filter((post) => post.feedId === feed.id);
         const displayedPostLinks = postsWithCurrentId.map((post) => post.link);
         const newPosts = posts.filter((post) => !displayedPostLinks.includes(post.link));
@@ -46,13 +38,13 @@ const updatePosts = (watchedState) => {
           return;
         }
 
-        watchedState.posts.unshift(...newPosts);
+        state.posts.unshift(...newPosts);
       });
     })
     .catch((error) => {
-      watchedState.form.error = error.message;
+      state.form.error = error.message;
     })
-    .finally(() => setTimeout(updatePosts, 5000, watchedState));
+    .finally(() => setTimeout(updatePosts, 5000, state));
 };
 
 export default () => {
@@ -72,6 +64,10 @@ export default () => {
     submit: document.querySelector('button[type="submit"]'),
     feedsList: document.querySelector('.feeds'),
     postsList: document.querySelector('.posts'),
+    modal: document.querySelector('.modal'),
+    modalHeader: document.querySelector('.modal-header'),
+    modalBody: document.querySelector('.modal-body'),
+    modalHref: document.querySelector('.full-article'),
   };
 
   const i18n = i18next.createInstance();
@@ -82,7 +78,7 @@ export default () => {
   })
 
     .then(() => {
-      const watchedState = onChange(initialState, initView(elements, i18n, initialState));
+      const state = onChange(initialState, initView(elements, i18n, initialState));
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -95,22 +91,34 @@ export default () => {
 
         schema.validate(value)
           .then(() => {
-            watchedState.form.processState = 'sending';
-            watchedState.form.error = null;
+            state.form.processState = 'sending';
+            state.form.error = null;
             return getData(value);
           })
           .then((response) => {
             const parser = new Parser(response.data.contents, value);
-            setFeed(parser.feed, watchedState);
-            setPosts(parser.posts, watchedState);
 
-            watchedState.form.processState = 'success';
+            state.feeds.push(parser.feed);
+            state.posts.push(...parser.posts);
+            state.form.processState = 'success';
+            elements.feedback.textContent = i18n.t('successUrl');
+            elements.feedback.style.color = 'green';
           })
           .catch((error) => {
-            watchedState.form.error = error.message;
+            state.form.error = error.message;
             return _.keyBy(error.inner, 'path');
           });
       });
-      updatePosts(watchedState);
+
+      elements.postsList.addEventListener('click', (event) => {
+        const postId = event.target.dataset.id;
+
+        if (postId) {
+          state.uiState.displayedPost = postId;
+          state.uiState.viewedPostIds.add(postId);
+        }
+      });
+
+      updatePosts(state);
     });
 };

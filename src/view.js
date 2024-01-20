@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const renderErrorsHandler = (alert, elements, i18n) => {
   const errorMessage = alert !== undefined ? alert.key : alert;
 
@@ -17,29 +15,47 @@ const renderErrorsHandler = (alert, elements, i18n) => {
   }
 };
 
-const successRenderPosts = (elements, state, i18n) => {
-  const { posts } = state;
-  const { postsList } = elements;
+const createButton = (post, i18n) => {
+  const button = document.createElement('button');
+  button.setAttribute('type', 'button');
+  button.setAttribute('data-id', post.id);
+  button.setAttribute('data-bs-toggle', 'modal');
+  button.setAttribute('data-bs-target', '#modal');
+  button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+  button.textContent = i18n.t('viewing');
 
-  const divCard = document.createElement('div');
-  divCard.classList.add('card', 'border-0');
+  return button;
+};
 
-  const divCardBody = document.createElement('div');
-  divCardBody.classList.add('card-body');
+const createFeeds = (state) => {
+  const feeds = [];
 
-  const headerPostsCard = document.createElement('h2');
-  headerPostsCard.classList.add('card-title', 'h4');
-  headerPostsCard.textContent = i18n.t('posts');
-  divCardBody.append(headerPostsCard);
+  state.feeds.forEach((feed) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'border-0', 'border-end-0');
+    const feedTitle = document.createElement('h3');
+    feedTitle.classList.add('h6', 'm-0');
+    feedTitle.textContent = feed.title;
 
-  const ulCard = document.createElement('ul');
-  ulCard.classList.add('list-group', 'border-0', 'rounded-0');
+    li.append(feedTitle);
 
-  const liCards = posts.flat().map((post) => {
-    const postCount = _.uniqueId();
+    const p = document.createElement('p');
+    p.classList.add('m-0', 'small', 'text-black-50');
+    p.textContent = feed.description;
 
-    const liCard = document.createElement('li');
-    liCard.classList.add(
+    li.append(p);
+    feeds.push(li);
+  });
+
+  return feeds;
+};
+
+const createPosts = (state, i18n) => {
+  const posts = [];
+
+  state.posts.forEach((post) => {
+    const li = document.createElement('li');
+    li.classList.add(
       'list-group-item',
       'd-flex',
       'justify-content-between',
@@ -48,92 +64,83 @@ const successRenderPosts = (elements, state, i18n) => {
       'border-end-0',
     );
 
-    const { title, link } = post;
-
     const a = document.createElement('a');
-    a.innerHTML = `
-      <a 
-        href=${link}
-        class="fw-bold"
-        target="_blank"
-        data-id=${postCount}
-        rel="noopener noreferrer"
-      >
-        ${title}
-      </a>
-    `;
+    a.setAttribute('href', post.link);
+    a.setAttribute('data-id', post.id);
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
 
-    const button = document.createElement('button');
-    button.innerHTML = `
-      <button 
-        type="button" 
-        class="btn btn-outline-primary btn-sm"
-        data-id="${postCount}"
-        data-bs-toggle="modal"
-        data-bs-target="#modal"
-      >
-        ${i18n.t('viewing')}
-      </button>
-    `;
+    if (state.uiState.viewedPostIds.has(post.id)) {
+      a.classList.add('fw-normal');
+    } else {
+      a.classList.add('fw-bold');
+    }
 
-    liCard.append(a);
-    liCard.append(button);
+    a.textContent = post.title;
 
-    return liCard;
+    const button = createButton(post, i18n);
+
+    li.append(a);
+    li.append(button);
+
+    posts.push(li);
   });
+  return posts;
+};
 
-  ulCard.append(...liCards);
+const createList = (itemsType, state, i18n) => {
+  const card = document.createElement('div');
+  card.classList.add('card', 'border-0');
 
-  divCard.append(divCardBody);
-  divCard.append(ulCard);
+  const cardBody = document.createElement('div');
+  cardBody.classList.add('card-body');
+
+  const cardTitle = document.createElement('h2');
+  cardTitle.classList.add('card-title', 'h4');
+  cardTitle.textContent = i18n.t(`items.${itemsType}`);
+
+  const list = document.createElement('ul');
+  list.classList.add('list-group', 'border-0', 'rounded-0');
+
+  cardBody.append(cardTitle);
+  card.append(cardBody);
+
+  switch (itemsType) {
+    case 'feeds':
+      list.append(...createFeeds(state));
+      break;
+    case 'posts':
+      list.append(...createPosts(state, i18n));
+      break;
+    default:
+      break;
+  }
+
+  card.append(list);
+  return card;
+};
+
+const renderFeeds = (state, { feedsList }, i18n) => {
+  feedsList.innerHTML = '';
+  const feeds = createList('feeds', state, i18n);
+  feedsList.append(feeds);
+};
+
+const renderPosts = (state, { postsList }, i18n) => {
   postsList.innerHTML = '';
-  postsList.append(divCard);
+  const posts = createList('posts', state, i18n);
+  postsList.append(posts);
 };
 
-const successRenderFeeds = (elements, state, i18n) => {
-  const { feeds } = state;
-  const { feedsList } = elements;
-
-  feeds.map((feed) => {
-    const divCard = document.createElement('div');
-    divCard.classList.add('card', 'border-0');
-
-    const divCardBody = document.createElement('div');
-    divCardBody.classList.add('card-body');
-
-    const headerFeedsCard = document.createElement('h2');
-    headerFeedsCard.classList.add('card-title', 'h4');
-    headerFeedsCard.textContent = i18n.t('feeds');
-
-    divCardBody.append(headerFeedsCard);
-
-    const ulCard = document.createElement('ul');
-    ulCard.classList.add('list-group', 'border-0', 'rounded-0');
-
-    const liCard = document.createElement('li');
-    liCard.classList.add('list-group-item', 'border-0', 'border-end-0');
-
-    const h3Li = document.createElement('h3');
-    h3Li.classList.add('h6', 'm-0');
-    h3Li.textContent = feed.title;
-
-    const pLi = document.createElement('p');
-    pLi.classList.add('m-0', 'small', 'text-black-50');
-    pLi.textContent = feed.description;
-
-    liCard.append(h3Li);
-    liCard.append(pLi);
-
-    ulCard.append(liCard);
-
-    divCard.append(divCardBody);
-    divCard.append(ulCard);
-    feedsList.append(divCard);
-    return feedsList;
-  });
+const renderDispayedPost = (state, { modalHeader, modalBody, modalHref }, id) => {
+  const posts = state.posts.filter((post) => post.id === id);
+  const [{ title, description, link }] = posts;
+  modalHeader.textContent = title;
+  modalBody.textContent = description;
+  modalHref.setAttribute('href', link);
 };
 
-const handleProcessState = (elements, process) => {
+const renderProcessState = (elements, process, i18n) => {
   switch (process) {
     case 'sending':
       elements.form.reset();
@@ -153,17 +160,21 @@ const handleProcessState = (elements, process) => {
 export default (elements, i18n, state) => (path, value) => {
   switch (path) {
     case 'form.processState':
-      handleProcessState(elements, value, state, i18n);
+      renderProcessState(elements, value, i18n);
       break;
 
     case 'form.error':
       renderErrorsHandler(value, elements, i18n);
       break;
     case 'posts':
-      successRenderPosts(elements, state, i18n);
+    case 'uiState.viewedPostIds':
+      renderPosts(state, elements, i18n);
       break;
     case 'feeds':
-      successRenderFeeds(elements, state, i18n);
+      renderFeeds(state, elements, i18n);
+      break;
+    case 'uiState.displayedPost':
+      renderDispayedPost(state, elements, value);
       break;
     default:
       break;
