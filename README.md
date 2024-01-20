@@ -1,3 +1,5 @@
+RSS агрегатор
+
 ### Hexlet tests and linter status:
 
 <a href="https://codeclimate.com/github/DMotorina/frontend-project-11/maintainability"><img src="https://api.codeclimate.com/v1/badges/d161ebaa720856f08521/maintainability" /></a>
@@ -50,6 +52,3 @@ make run
 ```
 make link
 ```
-
-
-https://frontend-project-11-one-mu.vercel.app/
