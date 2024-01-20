@@ -48,5 +48,5 @@ make run
 
 ### Checking that everything is normal
 ```
-make link
+make lint
 ```
