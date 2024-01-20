@@ -1,6 +1,6 @@
 export const initialState = {
   form: {
-    processState: '',
+    processState: 'filling',
     error: null,
   },
   feeds: [],

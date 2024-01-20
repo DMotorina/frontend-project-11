@@ -1,6 +1,5 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import _ from 'lodash';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import initView from './view';
@@ -47,6 +46,18 @@ const updatePosts = (state) => {
     .finally(() => setTimeout(updatePosts, 5000, state));
 };
 
+const handleError = (error) => {
+  if (error.isParsingError) {
+    return 'rssError';
+  }
+
+  if (axios.isAxiosError(error)) {
+    return 'networkError';
+  }
+
+  return error.message.key ?? 'unknown';
+};
+
 export default () => {
   yup.setLocale({
     mixed: {
@@ -54,6 +65,7 @@ export default () => {
     },
     string: {
       url: () => ({ key: 'urlError' }),
+      required: () => ({ key: 'empty' }),
     },
   });
 
@@ -98,15 +110,13 @@ export default () => {
           .then((response) => {
             const parser = new Parser(response.data.contents, value);
 
+            state.form.processState = 'success';
             state.feeds.push(parser.feed);
             state.posts.push(...parser.posts);
-            state.form.processState = 'success';
-            elements.feedback.textContent = i18n.t('successUrl');
-            elements.feedback.style.color = 'green';
           })
           .catch((error) => {
-            state.form.error = error.message;
-            return _.keyBy(error.inner, 'path');
+            state.form.processState = 'invalid';
+            state.form.error = handleError(error);
           });
       });
 
@@ -118,7 +128,6 @@ export default () => {
           state.uiState.viewedPostIds.add(postId);
         }
       });
-
       updatePosts(state);
     });
 };

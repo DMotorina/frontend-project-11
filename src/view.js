@@ -1,28 +1,21 @@
-const renderErrorsHandler = (alert, elements, i18n) => {
-  const errorMessage = alert !== undefined ? alert.key : alert;
-
-  if (errorMessage) {
-    elements.input.classList.add('is-invalid');
-    elements.feedback.classList.add('text-danger');
-    elements.feedback.textContent = i18n.t(errorMessage);
-  } else {
-    elements.input.classList.remove('is-invalid');
-    elements.feedback.textContent = i18n.t('successUrl');
-    elements.feedback.classList.remove('text-danger');
-    elements.feedback.classList.add('text-success');
-    elements.form.reset();
-    elements.form.focus();
+const renderErrors = (error, elements, i18n) => {
+  if (!error.length) {
+    return;
   }
+
+  elements.feedback.classList.add('text-danger');
+  elements.feedback.textContent = i18n.t(`errors.${error}`);
 };
 
 const createButton = (post, i18n) => {
   const button = document.createElement('button');
+
   button.setAttribute('type', 'button');
   button.setAttribute('data-id', post.id);
   button.setAttribute('data-bs-toggle', 'modal');
   button.setAttribute('data-bs-target', '#modal');
   button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-  button.textContent = i18n.t('viewing');
+  button.textContent = i18n.t('button.viewing');
 
   return button;
 };
@@ -140,20 +133,49 @@ const renderDispayedPost = (state, { modalHeader, modalBody, modalHref }, id) =>
   modalHref.setAttribute('href', link);
 };
 
+const renderSending = ({ form, input, feedback }, i18n) => {
+  input.classList.remove('is-invalid');
+  feedback.classList.remove('text-danger');
+  feedback.classList.remove('text-success');
+  feedback.classList.add('text-warning');
+  feedback.textContent = i18n.t('status.sending');
+  form.reset();
+  form.focus();
+};
+
+const renderSuccess = ({ form, input, feedback }, i18n) => {
+  input.classList.remove('is-invalid');
+  feedback.classList.remove('text-danger');
+  feedback.classList.remove('text-warning');
+  feedback.classList.add('text-success');
+  feedback.textContent = i18n.t('status.successUrl');
+  form.reset();
+  form.focus();
+};
+
+const renderInvalid = ({ input, feedback }) => {
+  input.classList.add('is-invalid');
+  feedback.classList.remove('text-success');
+  feedback.classList.remove('text-warning');
+  feedback.classList.add('text-danger');
+};
+
 const renderProcessState = (elements, process, i18n) => {
   switch (process) {
     case 'sending':
-      elements.form.reset();
-      elements.form.focus();
+      renderSending(elements, i18n);
       break;
 
     case 'success':
-      elements.form.reset();
-      elements.form.focus();
+      renderSuccess(elements, i18n);
+      break;
+
+    case 'invalid':
+      renderInvalid(elements);
       break;
 
     default:
-      throw new Error(`Unknown process ${process}`);
+      break;
   }
 };
 
@@ -164,18 +186,22 @@ export default (elements, i18n, state) => (path, value) => {
       break;
 
     case 'form.error':
-      renderErrorsHandler(value, elements, i18n);
+      renderErrors(value, elements, i18n);
       break;
+
     case 'posts':
     case 'uiState.viewedPostIds':
       renderPosts(state, elements, i18n);
       break;
+
     case 'feeds':
       renderFeeds(state, elements, i18n);
       break;
+
     case 'uiState.displayedPost':
       renderDispayedPost(state, elements, value);
       break;
+
     default:
       break;
   }

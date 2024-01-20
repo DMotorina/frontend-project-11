@@ -1,17 +1,23 @@
 export default {
   translation: {
-    header: 'RSS агрегатор',
-    description: 'Начните читать RSS сегодня! Это легко, это красиво.',
-    addButton: 'Добавить',
-    exampleUrl: 'Пример',
-    successUrl: 'RSS успешно загружен',
-    urlError: 'Ссылка должна быть валидным URL',
-    rssError: 'Ресурс не содержит валидный RSS',
-    dublicateError: 'RSS уже существует',
+    status: {
+      sending: 'RSS загружается',
+      successUrl: 'RSS успешно загружен',
+    },
+    errors: {
+      urlError: 'Ссылка должна быть валидным URL',
+      dublicateError: 'RSS уже существует',
+      rssError: 'Ресурс не содержит валидный RSS',
+      networkError: 'Ошибка сети',
+      unknown: 'Что-то пошло не так',
+      empty: 'Не должно быть пустым',
+    },
     items: {
       feeds: 'Фиды',
       posts: 'Посты',
     },
-    viewing: 'Просмотр',
+    button: {
+      viewing: 'Просмотр',
+    },
   },
 };
