@@ -1,10 +1,10 @@
-RSS агрегатор
-
 ### Hexlet tests and linter status:
 
 <a href="https://codeclimate.com/github/DMotorina/frontend-project-11/maintainability"><img src="https://api.codeclimate.com/v1/badges/d161ebaa720856f08521/maintainability" /></a>
 
 [![Actions Status](https://github.com/DMotorina/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DMotorina/frontend-project-11/actions)
+
+## RSS агрегатор
 
 ## Description
 Simple feed aggregator, which collect RSS feeds and then watched for a new posts.
