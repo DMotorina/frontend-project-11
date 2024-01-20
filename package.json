@@ -1,5 +1,5 @@
 {
-  "name": "my-webpack-project",
+  "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "Simple feed aggregator, which collect RSS feeds and then watched for a new posts.",
   "main": "index.js",
