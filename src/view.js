@@ -1,5 +1,5 @@
 const renderErrors = (state, { feedback }, i18n, error) => {
-  if (!error.length) {
+  if (error === null) {
     return;
   }
 
