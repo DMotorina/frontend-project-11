@@ -1,11 +1,3 @@
-const parseError = (data) => data.querySelector('parsererror');
-
-if (parseError) {
-  const error = new Error(parseError.textContent);
-  error.isParsingError = true;
-  throw error;
-}
-
 export default class {
   constructor(data, url) {
     this.doc = (new DOMParser()).parseFromString(data, 'text/xml');
@@ -29,9 +21,5 @@ export default class {
       title: this.doc.querySelector('title').textContent,
       description: this.doc.querySelector('description').textContent,
     };
-  }
-
-  parseErrors() {
-    return parseError(this.doc);
   }
 }
