@@ -1,10 +1,10 @@
-const renderErrors = (error, elements, i18n) => {
+const renderErrors = (state, { feedback }, i18n, error) => {
   if (!error.length) {
     return;
   }
 
-  elements.feedback.classList.add('text-danger');
-  elements.feedback.textContent = i18n.t(`errors.${error}`);
+  feedback.classList.add('text-danger');
+  feedback.textContent = i18n.t(`errors.${state.form.error}`);
 };
 
 const createButton = (post, i18n) => {
@@ -186,7 +186,7 @@ export default (elements, i18n, state) => (path, value) => {
       break;
 
     case 'form.error':
-      renderErrors(value, elements, i18n);
+      renderErrors(state, elements, i18n, value);
       break;
 
     case 'posts':
