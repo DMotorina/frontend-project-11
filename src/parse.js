@@ -1,6 +1,7 @@
 export default class {
   constructor(data, url) {
     this.doc = (new DOMParser()).parseFromString(data, 'text/xml');
+    this.parseError = this.doc.querySelector('parsererror');
     this.url = url;
   }
 
@@ -21,5 +22,13 @@ export default class {
       title: this.doc.querySelector('title').textContent,
       description: this.doc.querySelector('description').textContent,
     };
+  }
+
+  getError() {
+    if (this.parseError) {
+      const error = new Error(this.textContent);
+      error.isParsingError = true;
+      throw error;
+    }
   }
 }
