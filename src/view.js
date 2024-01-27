@@ -1,12 +1,12 @@
 import onChange from 'on-change';
 
 const renderErrors = (state, { feedback }, i18n) => {
-  if (state.form.error === null) {
+  if (!state.loadingProcess.error.length) {
     return;
   }
 
   feedback.classList.add('text-danger');
-  feedback.textContent = i18n.t(`errors.${state.form.error}`);
+  feedback.textContent = i18n.t(`errors.${state.loadingProcess.error}`);
 };
 
 const createButton = (post, i18n) => {
@@ -164,7 +164,7 @@ const renderInvalid = ({ input, feedback }) => {
 };
 
 const renderProcessState = (elements, state, i18n) => {
-  switch (state.form.processState) {
+  switch (state.loadingProcess.status) {
     case 'sending':
       renderSending(elements, i18n);
       break;
@@ -184,11 +184,11 @@ const renderProcessState = (elements, state, i18n) => {
 
 export default (elements, i18n, state) => onChange(state, (path) => {
   switch (path) {
-    case 'form.processState':
+    case 'loadingProcess.status':
       renderProcessState(elements, state, i18n);
       break;
 
-    case 'form.error':
+    case 'loadingProcess.error':
       renderErrors(state, elements, i18n);
       break;
 

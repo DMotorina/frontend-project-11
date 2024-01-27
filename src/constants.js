@@ -1,7 +1,12 @@
 export const initialState = {
   form: {
-    processState: 'filling',
-    error: null,
+    // processState: 'filling',
+    isValid: null,
+    error: '',
+  },
+  loadingProcess: {
+    status: 'filling',
+    error: '',
   },
   feeds: [],
   posts: [],

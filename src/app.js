@@ -57,6 +57,34 @@ const handleError = (error) => {
   return error.message.key ?? 'unknown';
 };
 
+const validate = (url, urls, watchedState) => {
+  const schema = makeSchema(urls);
+
+  schema.validate(url)
+    .then(() => {
+      watchedState.form.isValid = null;
+      watchedState.loadingProcess.status = 'sending';
+      watchedState.form.error = '';
+      watchedState.loadingProcess.error = '';
+      return getData(url);
+    })
+    .then((response) => {
+      const parser = new Parser(response.data.contents, url);
+
+      watchedState.form.isValid = true;
+      watchedState.loadingProcess.status = 'success';
+      watchedState.form.error = '';
+      watchedState.loadingProcess.error = '';
+      watchedState.feeds.push(parser.feed);
+      watchedState.posts.push(...parser.posts);
+    })
+    .catch((error) => {
+      watchedState.form.isValid = false;
+      watchedState.loadingProcess.status = 'invalid';
+      watchedState.loadingProcess.error = handleError(error);
+    });
+};
+
 export default () => {
   yup.setLocale({
     mixed: {
@@ -94,28 +122,10 @@ export default () => {
         event.preventDefault();
 
         const formData = new FormData(event.target);
-        const value = (formData.get('url')).trim();
+        const url = (formData.get('url')).trim();
         const urls = initialState.feeds.map((feed) => feed.id);
 
-        const schema = makeSchema(urls);
-
-        schema.validate(value)
-          .then(() => {
-            watchedState.form.processState = 'sending';
-            watchedState.form.error = null;
-            return getData(value);
-          })
-          .then((response) => {
-            const parser = new Parser(response.data.contents, value);
-
-            watchedState.form.processState = 'success';
-            watchedState.feeds.push(parser.feed);
-            watchedState.posts.push(...parser.posts);
-          })
-          .catch((error) => {
-            watchedState.form.processState = 'invalid';
-            watchedState.form.error = handleError(error);
-          });
+        validate(url, urls, watchedState);
       });
 
       elements.postsList.addEventListener('click', (event) => {
