@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 
-const renderErrors = (state, { feedback }, i18n, error) => {
-  if (error === null) {
+const renderErrors = (state, { feedback }, i18n) => {
+  if (state.form.error === null) {
     return;
   }
 
@@ -127,8 +127,9 @@ const renderPosts = (state, { postsList }, i18n) => {
   postsList.append(posts);
 };
 
-const renderDispayedPost = (state, { modalHeader, modalBody, modalHref }, id) => {
-  const posts = state.posts.filter((post) => post.id === id);
+const renderDispayedPost = (state, { modalHeader, modalBody, modalHref }) => {
+  const currentId = state.uiState.displayedPost;
+  const posts = state.posts.filter((post) => post.id === currentId);
   const [{ title, description, link }] = posts;
   modalHeader.textContent = title;
   modalBody.textContent = description;
@@ -162,8 +163,8 @@ const renderInvalid = ({ input, feedback }) => {
   feedback.classList.add('text-danger');
 };
 
-const renderProcessState = (elements, process, i18n) => {
-  switch (process) {
+const renderProcessState = (elements, state, i18n) => {
+  switch (state.form.processState) {
     case 'sending':
       renderSending(elements, i18n);
       break;
@@ -188,7 +189,7 @@ export default (elements, i18n, state) => onChange(state, (path) => {
       break;
 
     case 'form.error':
-      renderErrors(state, elements, i18n, state);
+      renderErrors(state, elements, i18n);
       break;
 
     case 'posts':
@@ -201,7 +202,7 @@ export default (elements, i18n, state) => onChange(state, (path) => {
       break;
 
     case 'uiState.displayedPost':
-      renderDispayedPost(state, elements, state);
+      renderDispayedPost(state, elements);
       break;
 
     default:
