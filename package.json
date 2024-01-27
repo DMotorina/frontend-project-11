@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Simple feed aggregator, which collect RSS feeds and then watched for a new posts.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=production --node-env=production",
