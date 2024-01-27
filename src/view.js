@@ -1,3 +1,5 @@
+import onChange from 'on-change';
+
 const renderErrors = (state, { feedback }, i18n, error) => {
   if (error === null) {
     return;
@@ -179,14 +181,14 @@ const renderProcessState = (elements, process, i18n) => {
   }
 };
 
-export default (elements, i18n, state) => (path, value) => {
+export default (elements, i18n, state) => onChange(state, (path) => {
   switch (path) {
     case 'form.processState':
-      renderProcessState(elements, value, i18n);
+      renderProcessState(elements, state, i18n);
       break;
 
     case 'form.error':
-      renderErrors(state, elements, i18n, value);
+      renderErrors(state, elements, i18n, state);
       break;
 
     case 'posts':
@@ -199,10 +201,10 @@ export default (elements, i18n, state) => (path, value) => {
       break;
 
     case 'uiState.displayedPost':
-      renderDispayedPost(state, elements, value);
+      renderDispayedPost(state, elements, state);
       break;
 
     default:
       break;
   }
-};
+});

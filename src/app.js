@@ -1,8 +1,7 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import onChange from 'on-change';
 import i18next from 'i18next';
-import initView from './view';
+import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState } from './constants';
@@ -88,9 +87,8 @@ export default () => {
     debug: false,
     resources,
   })
-
     .then(() => {
-      const state = onChange(initialState, initView(elements, i18n, initialState));
+      const watchedState = watch(elements, i18n, initialState);
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -103,20 +101,20 @@ export default () => {
 
         schema.validate(value)
           .then(() => {
-            state.form.processState = 'sending';
-            state.form.error = null;
+            watchedState.form.processState = 'sending';
+            watchedState.form.error = null;
             return getData(value);
           })
           .then((response) => {
             const parser = new Parser(response.data.contents, value);
 
-            state.form.processState = 'success';
-            state.feeds.push(parser.feed);
-            state.posts.push(...parser.posts);
+            watchedState.form.processState = 'success';
+            watchedState.feeds.push(parser.feed);
+            watchedState.posts.push(...parser.posts);
           })
           .catch((error) => {
-            state.form.processState = 'invalid';
-            state.form.error = handleError(error);
+            watchedState.form.processState = 'invalid';
+            watchedState.form.error = handleError(error);
           });
       });
 
@@ -124,10 +122,10 @@ export default () => {
         const postId = event.target.dataset.id;
 
         if (postId) {
-          state.uiState.displayedPost = postId;
-          state.uiState.viewedPostIds.add(postId);
+          watchedState.uiState.displayedPost = postId;
+          watchedState.uiState.viewedPostIds.add(postId);
         }
       });
-      updatePosts(state);
+      updatePosts(watchedState);
     });
 };
