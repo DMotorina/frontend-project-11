@@ -5,15 +5,9 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState } from './constants';
+import { getProxiedUrl } from './utils';
 
-const getProxiedUrl = (url) => {
-  const resultUrl = new URL('https://allorigins.hexlet.app/get');
-  resultUrl.searchParams.set('url', url);
-  resultUrl.searchParams.set('disableCache', true);
-  return resultUrl;
-};
-
-const getData = (data) => axios.get(getProxiedUrl(data));
+const updateTime = 5000;
 
 const makeSchema = (validatedLinks) => yup.string()
   .required()
@@ -21,7 +15,7 @@ const makeSchema = (validatedLinks) => yup.string()
   .notOneOf(validatedLinks);
 
 const updatePosts = (state) => {
-  const promises = state.feeds.map((feed) => getData(feed.id));
+  const promises = state.feeds.map((feed) => getProxiedUrl(feed.id));
   return Promise.all(promises)
     .then((response) => {
       response.forEach((element) => {
@@ -42,7 +36,7 @@ const updatePosts = (state) => {
     .catch((error) => {
       state.form.error = error.message;
     })
-    .finally(() => setTimeout(updatePosts, 5000, state));
+    .finally(() => setTimeout(updatePosts, updateTime, state));
 };
 
 const handleError = (error) => {
@@ -66,7 +60,7 @@ const validate = (url, urls, watchedState) => {
       watchedState.loadingProcess.status = 'sending';
       watchedState.form.error = '';
       watchedState.loadingProcess.error = '';
-      return getData(url);
+      return getProxiedUrl(url);
     })
     .then((response) => {
       const parser = new Parser(response.data.contents, url);
@@ -86,16 +80,6 @@ const validate = (url, urls, watchedState) => {
 };
 
 export default () => {
-  yup.setLocale({
-    mixed: {
-      notOneOf: () => ({ key: 'dublicateError' }),
-    },
-    string: {
-      url: () => ({ key: 'urlError' }),
-      required: () => ({ key: 'empty' }),
-    },
-  });
-
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
