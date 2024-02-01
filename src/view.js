@@ -136,14 +136,13 @@ const renderDispayedPost = (state, { modalHeader, modalBody, modalHref }) => {
   modalHref.setAttribute('href', link);
 };
 
-const renderSending = ({ form, input, feedback }, i18n) => {
+const renderSending = ({ input, feedback }, i18n) => {
   input.classList.remove('is-invalid');
   feedback.classList.remove('text-danger');
   feedback.classList.remove('text-success');
   feedback.classList.add('text-warning');
   feedback.textContent = i18n.t('status.sending');
-  form.reset();
-  form.focus();
+  input.focus();
 };
 
 const renderSuccess = ({ form, input, feedback }, i18n) => {
@@ -153,7 +152,7 @@ const renderSuccess = ({ form, input, feedback }, i18n) => {
   feedback.classList.add('text-success');
   feedback.textContent = i18n.t('status.successUrl');
   form.reset();
-  form.focus();
+  input.focus();
 };
 
 const renderInvalid = ({ input, feedback }) => {

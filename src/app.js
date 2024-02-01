@@ -51,6 +51,17 @@ const handleError = (error) => {
   return error.message.key ?? 'unknown';
 };
 
+const loadData = (response, url, watchedState) => {
+  const parser = new Parser(response.data.contents, url);
+
+  watchedState.form.isValid = true;
+  watchedState.loadingProcess.status = 'success';
+  watchedState.form.error = '';
+  watchedState.loadingProcess.error = '';
+  watchedState.feeds.push(parser.feed);
+  watchedState.posts.push(...parser.posts);
+};
+
 const validate = (url, urls, watchedState) => {
   const schema = makeSchema(urls);
 
@@ -63,14 +74,7 @@ const validate = (url, urls, watchedState) => {
       return getProxiedUrl(url);
     })
     .then((response) => {
-      const parser = new Parser(response.data.contents, url);
-
-      watchedState.form.isValid = true;
-      watchedState.loadingProcess.status = 'success';
-      watchedState.form.error = '';
-      watchedState.loadingProcess.error = '';
-      watchedState.feeds.push(parser.feed);
-      watchedState.posts.push(...parser.posts);
+      loadData(response, url, watchedState);
     })
     .catch((error) => {
       watchedState.form.isValid = false;
