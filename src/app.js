@@ -62,25 +62,13 @@ const loadData = (response, url, watchedState) => {
   watchedState.posts.push(...parser.posts);
 };
 
-const validate = (url, urls, watchedState) => {
+const validate = (url, urls) => {
   const schema = makeSchema(urls);
 
-  schema.validate(url)
-    .then(() => {
-      watchedState.form.isValid = null;
-      watchedState.loadingProcess.status = 'sending';
-      watchedState.form.error = '';
-      watchedState.loadingProcess.error = '';
-      return getProxiedUrl(url);
-    })
-    .then((response) => {
-      loadData(response, url, watchedState);
-    })
-    .catch((error) => {
-      watchedState.form.isValid = false;
-      watchedState.loadingProcess.status = 'invalid';
-      watchedState.loadingProcess.error = handleError(error);
-    });
+  return schema
+    .validate(url)
+    .then(() => null)
+    .catch((error) => error.message);
 };
 
 export default () => {
@@ -113,7 +101,31 @@ export default () => {
         const url = (formData.get('url')).trim();
         const urls = initialState.feeds.map((feed) => feed.id);
 
-        validate(url, urls, watchedState);
+        validate(url, urls)
+          .then(() => {
+            if (watchedState.loadingProcess.enteredUrls.has(url)) {
+              watchedState.form.isValid = false;
+              watchedState.loadingProcess.status = 'invalid';
+              watchedState.loadingProcess.error = 'dublicateError';
+              return;
+            }
+
+            watchedState.form.isValid = true;
+            watchedState.loadingProcess.status = 'sending';
+            watchedState.form.error = '';
+            watchedState.loadingProcess.error = '';
+            watchedState.loadingProcess.enteredUrls.add(url);
+
+            getProxiedUrl(url)
+              .then((response) => {
+                loadData(response, url, watchedState);
+              })
+              .catch((error) => {
+                watchedState.form.isValid = false;
+                watchedState.loadingProcess.status = 'invalid';
+                watchedState.loadingProcess.error = handleError(error);
+              });
+          });
       });
 
       elements.postsList.addEventListener('click', (event) => {

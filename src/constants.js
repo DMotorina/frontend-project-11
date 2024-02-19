@@ -6,6 +6,7 @@ export const initialState = {
   loadingProcess: {
     status: 'filling',
     error: '',
+    enteredUrls: new Set(),
   },
   feeds: [],
   posts: [],
