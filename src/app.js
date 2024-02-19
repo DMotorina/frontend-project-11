@@ -40,6 +40,14 @@ const updatePosts = (state) => {
 };
 
 const handleError = (error) => {
+  if (error.message.includes('foundBelow')) {
+    return 'rssError';
+  }
+
+  if (error.message.includes('Invalid URL')) {
+    return 'urlError';
+  }
+
   if (error.isParsingError) {
     return 'rssError';
   }
@@ -114,7 +122,10 @@ export default () => {
             watchedState.loadingProcess.status = 'sending';
             watchedState.form.error = '';
             watchedState.loadingProcess.error = '';
-            watchedState.loadingProcess.enteredUrls.add(url);
+
+            if (new URL(url)) {
+              watchedState.loadingProcess.enteredUrls.add(url);
+            }
 
             getProxiedUrl(url)
               .then((response) => {
@@ -125,6 +136,11 @@ export default () => {
                 watchedState.loadingProcess.status = 'invalid';
                 watchedState.loadingProcess.error = handleError(error);
               });
+          })
+          .catch((error) => {
+            watchedState.form.isValid = false;
+            watchedState.loadingProcess.status = 'invalid';
+            watchedState.loadingProcess.error = handleError(error);
           });
       });
 
