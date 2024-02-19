@@ -1,6 +1,6 @@
 export const initialState = {
   form: {
-    isValid: null,
+    isValid: false,
     error: '',
   },
   loadingProcess: {
