@@ -1,7 +1,7 @@
-// Generated using webpack-cli https://github.com/webpack/webpack-cli
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import WorkboxWebpackPlugin from 'workbox-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 import { fileURLToPath } from 'url';
 
@@ -21,6 +21,7 @@ const config = {
     host: 'localhost',
   },
   plugins: [
+    new MiniCssExtractPlugin(),
     new HtmlWebpackPlugin({
       template: 'index.html',
     }),
@@ -28,17 +29,18 @@ const config = {
   module: {
     rules: [
       {
+        test: /\.css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+        ],
+      },
+      {
         test: /\.scss$/,
         use: [
-          {
-            loader: 'style-loader',
-          },
-          {
-            loader: 'css-loader',
-          },
-          {
-            loader: 'sass-loader',
-          },
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader',
         ],
       },
       {
