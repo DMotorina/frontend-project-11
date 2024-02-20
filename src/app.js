@@ -58,12 +58,18 @@ const handleError = (error) => {
 const loadData = (response, url, watchedState) => {
   const parser = new Parser(response.data.contents, url);
 
-  watchedState.form.isValid = true;
-  watchedState.loadingProcess.status = 'success';
-  watchedState.form.error = '';
-  watchedState.loadingProcess.error = '';
-  watchedState.feeds.push(parser.feed);
-  watchedState.posts.push(...parser.posts);
+  if (parser.parseError) {
+    watchedState.form.isValid = false;
+    watchedState.loadingProcess.status = 'invalid';
+    watchedState.loadingProcess.error = 'rssError';
+  } else {
+    watchedState.form.isValid = true;
+    watchedState.loadingProcess.status = 'success';
+    watchedState.form.error = '';
+    watchedState.loadingProcess.error = '';
+    watchedState.feeds.push(parser.feed);
+    watchedState.posts.push(...parser.posts);
+  }
 };
 
 const validate = (url, urls) => {
