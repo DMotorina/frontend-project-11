@@ -34,7 +34,7 @@ const updatePosts = (state) => {
       });
     })
     .catch((error) => {
-      state.form.error = error.message;
+      state.loadingProcess.error = error.message;
     })
     .finally(() => setTimeout(updatePosts, updateTime, state));
 };
