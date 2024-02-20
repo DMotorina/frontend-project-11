@@ -1,12 +1,14 @@
 import * as yup from 'yup';
 import axios from 'axios';
 
-export const getProxiedUrl = (url) => {
+export const getStringProxiedUrl = (url) => {
   const resultUrl = new URL('https://allorigins.hexlet.app/get');
   resultUrl.searchParams.set('url', url);
   resultUrl.searchParams.set('disableCache', true);
-  return axios.get(resultUrl);
+  return resultUrl.toString();
 };
+
+export const loadValues = (value) => axios.get(getStringProxiedUrl(value));
 
 export const validateObject = yup.setLocale({
   mixed: {

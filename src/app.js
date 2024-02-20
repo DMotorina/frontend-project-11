@@ -5,7 +5,7 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState } from './constants';
-import { getProxiedUrl } from './utils';
+import { loadValues } from './utils';
 
 const updateTime = 5000;
 
@@ -15,7 +15,7 @@ const makeSchema = (validatedLinks) => yup.string()
   .notOneOf(validatedLinks);
 
 const updatePosts = (state) => {
-  const promises = state.feeds.map((feed) => getProxiedUrl(feed.id));
+  const promises = state.feeds.map((feed) => loadValues(feed.id));
   return Promise.all(promises)
     .then((response) => {
       response.forEach((element) => {
@@ -40,15 +40,11 @@ const updatePosts = (state) => {
 };
 
 const handleError = (error) => {
-  if (error.message.includes('foundBelow')) {
-    return 'rssError';
-  }
-
   if (error.message.includes('Invalid URL')) {
     return 'urlError';
   }
 
-  if (error.isParsingError) {
+  if (error.isParsingError || error.message.includes('foundBelow')) {
     return 'rssError';
   }
 
@@ -78,6 +74,8 @@ const validate = (url, urls) => {
     .then(() => null)
     .catch((error) => error.message);
 };
+
+const isURL = (url) => new URL(url);
 
 export default () => {
   const elements = {
@@ -123,11 +121,11 @@ export default () => {
             watchedState.form.error = '';
             watchedState.loadingProcess.error = '';
 
-            if (new URL(url)) {
+            if (isURL(url)) {
               watchedState.loadingProcess.enteredUrls.add(url);
             }
 
-            getProxiedUrl(url)
+            loadValues(url)
               .then((response) => {
                 loadData(response, url, watchedState);
               })
