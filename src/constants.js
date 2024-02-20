@@ -16,4 +16,4 @@ export const initialState = {
   },
 };
 
-export default {};
+export const updateTime = 5000;

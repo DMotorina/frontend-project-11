@@ -4,10 +4,8 @@ import i18next from 'i18next';
 import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
-import { initialState } from './constants';
-import { loadValues } from './utils';
-
-const updateTime = 5000;
+import { initialState, updateTime } from './constants';
+import { loadValues, isURL } from './utils';
 
 const makeSchema = (validatedLinks) => yup.string()
   .required()
@@ -80,8 +78,6 @@ const validate = (url, urls) => {
     .then(() => null)
     .catch((error) => error.message);
 };
-
-const isURL = (url) => new URL(url);
 
 export default () => {
   const elements = {
