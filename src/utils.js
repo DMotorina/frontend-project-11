@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import axios from 'axios';
+import { updateRequest } from './constants';
 
 const getStringProxiedUrl = (url) => {
   const resultUrl = new URL('https://allorigins.hexlet.app/get');
@@ -8,7 +9,11 @@ const getStringProxiedUrl = (url) => {
   return resultUrl.toString();
 };
 
-export const loadValues = (value) => axios.get(getStringProxiedUrl(value));
+export const loadValues = (value) => axios({
+  method: 'get',
+  url: getStringProxiedUrl(value),
+  timeout: updateRequest,
+});
 
 export const isURL = (url) => new URL(url);
 

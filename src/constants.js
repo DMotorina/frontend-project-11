@@ -17,3 +17,5 @@ export const initialState = {
 };
 
 export const updateTime = 5000;
+
+export const updateRequest = 10000;
