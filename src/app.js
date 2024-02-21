@@ -5,7 +5,7 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState, updateTime } from './constants';
-import { loadValues, isURL } from './utils';
+import { loadValues, isURL, customErrors } from './utils';
 
 const makeSchema = (validatedLinks) => yup.string()
   .required()
@@ -13,28 +13,28 @@ const makeSchema = (validatedLinks) => yup.string()
   .notOneOf(validatedLinks);
 
 const updatePosts = (state) => {
-  const promises = state.feeds.map((feed) => loadValues(feed.id));
-  return Promise.all(promises)
+  const promises = state.feeds.map((element) => loadValues(element.id)
     .then((response) => {
-      response.forEach((element) => {
-        const parser = new Parser(element.data.contents, element.data.status.url);
-        const { posts, feed } = parser;
-        const postsFromState = state.posts;
-        const postsWithCurrentId = postsFromState.filter((post) => post.feedId === feed.id);
-        const displayedPostLinks = postsWithCurrentId.map((post) => post.link);
-        const newPosts = posts.filter((post) => !displayedPostLinks.includes(post.link));
+      const parser = new Parser(response.data.contents, response.data.status.url);
 
-        if (newPosts.length === 0) {
-          return;
-        }
+      const { posts, feed } = parser;
 
-        state.posts.unshift(...newPosts);
-      });
+      const postsFromState = state.posts;
+
+      const postsWithCurrentId = postsFromState.filter((post) => post.feedId === feed.id);
+      const displayedPostLinks = postsWithCurrentId.map((post) => post.link);
+      const newPosts = posts.filter((post) => !displayedPostLinks.includes(post.link));
+
+      if (newPosts.length === 0) {
+        return;
+      }
+
+      state.posts.unshift(...newPosts);
     })
-    .catch((error) => {
-      state.loadingProcess.error = error.message;
-    })
-    .finally(() => setTimeout(updatePosts, updateTime, state));
+    .catch(() => {}));
+
+  return Promise.all(promises)
+    .then(() => setTimeout(updatePosts, updateTime, state));
 };
 
 const handleError = (error) => {
@@ -42,7 +42,7 @@ const handleError = (error) => {
     return 'urlError';
   }
 
-  if (error.isParsingError || error.message.includes('foundBelow')) {
+  if (error.isParsingError) {
     return 'rssError';
   }
 
@@ -60,14 +60,14 @@ const loadData = (response, url, watchedState) => {
     watchedState.form.isValid = false;
     watchedState.loadingProcess.status = 'invalid';
     watchedState.loadingProcess.error = 'rssError';
-  } else {
-    watchedState.form.isValid = true;
-    watchedState.loadingProcess.status = 'success';
-    watchedState.form.error = '';
-    watchedState.loadingProcess.error = '';
-    watchedState.feeds.push(parser.feed);
-    watchedState.posts.push(...parser.posts);
   }
+
+  watchedState.form.isValid = true;
+  watchedState.loadingProcess.status = 'success';
+  watchedState.form.error = '';
+  watchedState.loadingProcess.error = '';
+  watchedState.feeds.push(parser.feed);
+  watchedState.posts.push(...parser.posts);
 };
 
 const validate = (url, urls) => {
@@ -92,6 +92,8 @@ export default () => {
     modalBody: document.querySelector('.modal-body'),
     modalHref: document.querySelector('.full-article'),
   };
+
+  yup.setLocale(customErrors);
 
   const i18n = i18next.createInstance();
   i18n.init({
@@ -118,14 +120,14 @@ export default () => {
               return;
             }
 
+            if (isURL(url)) {
+              watchedState.loadingProcess.enteredUrls.add(url);
+            }
+
             watchedState.form.isValid = true;
             watchedState.loadingProcess.status = 'sending';
             watchedState.form.error = '';
             watchedState.loadingProcess.error = '';
-
-            if (isURL(url)) {
-              watchedState.loadingProcess.enteredUrls.add(url);
-            }
 
             loadValues(url)
               .then((response) => {

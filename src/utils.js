@@ -1,4 +1,3 @@
-import * as yup from 'yup';
 import axios from 'axios';
 import { updateRequest } from './constants';
 
@@ -17,12 +16,12 @@ export const loadValues = (value) => axios({
 
 export const isURL = (url) => new URL(url);
 
-export const validateObject = yup.setLocale({
-  mixed: {
-    notOneOf: () => ({ key: 'dublicateError' }),
-  },
+export const customErrors = {
   string: {
     url: () => ({ key: 'urlError' }),
     required: () => ({ key: 'empty' }),
   },
-});
+  mixed: {
+    notOneOf: () => ({ key: 'dublicateError' }),
+  },
+};
