@@ -8,7 +8,7 @@ const getStringProxiedUrl = (url) => {
   return resultUrl.toString();
 };
 
-export const loadValues = (value) => axios({
+export const getValues = (value) => axios({
   method: 'get',
   url: getStringProxiedUrl(value),
   timeout: updateRequest,

@@ -5,7 +5,7 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState, updateTime } from './constants';
-import { loadValues, isURL, customErrors } from './utils';
+import { getValues, isURL, customErrors } from './utils';
 
 const makeSchema = (validatedLinks) => yup.string()
   .required()
@@ -13,7 +13,7 @@ const makeSchema = (validatedLinks) => yup.string()
   .notOneOf(validatedLinks);
 
 const updatePosts = (state) => {
-  const promises = state.feeds.map((element) => loadValues(element.id)
+  const promises = state.feeds.map((element) => getValues(element.id)
     .then((response) => {
       const parser = new Parser(response.data.contents, response.data.status.url);
 
@@ -129,7 +129,7 @@ export default () => {
             watchedState.form.error = '';
             watchedState.loadingProcess.error = '';
 
-            loadValues(url)
+            getValues(url)
               .then((response) => {
                 loadData(response, url, watchedState);
               })
