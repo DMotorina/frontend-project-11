@@ -7,11 +7,6 @@ import Parser from './parse';
 import { initialState, updateTime } from './constants';
 import { getValues, isURL, customErrors } from './utils';
 
-const makeSchema = (validatedLinks) => yup.string()
-  .required()
-  .url()
-  .notOneOf(validatedLinks);
-
 const updatePosts = (state) => {
   const promises = state.feeds.map((element) => getValues(element.id)
     .then((response) => {
@@ -71,7 +66,11 @@ const loadData = (response, url, watchedState) => {
 };
 
 const validate = (url, urls) => {
-  const schema = makeSchema(urls);
+  const schema = yup
+    .string()
+    .required()
+    .url()
+    .notOneOf(urls);
 
   return schema
     .validate(url)
