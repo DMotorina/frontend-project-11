@@ -8,9 +8,9 @@ const getStringProxiedUrl = (url) => {
   return resultUrl.toString();
 };
 
-export const getValues = (value) => axios({
+export const request = (data) => axios({
   method: 'get',
-  url: getStringProxiedUrl(value),
+  url: getStringProxiedUrl(data),
   timeout: updateRequest,
 });
 

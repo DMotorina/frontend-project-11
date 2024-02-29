@@ -5,10 +5,10 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState, updateTime } from './constants';
-import { getValues, isURL, customErrors } from './utils';
+import { request, isURL, customErrors } from './utils';
 
 const updatePosts = (state) => {
-  const promises = state.feeds.map((element) => getValues(element.id)
+  const promises = state.feeds.map((element) => request(element.id)
     .then((response) => {
       const parser = new Parser(response.data.contents, response.data.status.url);
 
@@ -128,7 +128,7 @@ export default () => {
             watchedState.form.error = '';
             watchedState.loadingProcess.error = '';
 
-            getValues(url)
+            request(url)
               .then((response) => {
                 loadData(response, url, watchedState);
               })
