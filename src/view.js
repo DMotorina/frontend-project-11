@@ -1,12 +1,21 @@
 import onChange from 'on-change';
 
-const renderErrors = (state, { feedback }, i18n) => {
+const renderErrorsInloadingProcess = (state, { feedback }, i18n) => {
   if (!state.loadingProcess.error.length) {
     return;
   }
 
   feedback.classList.add('text-danger');
   feedback.textContent = i18n.t(`errors.${state.loadingProcess.error}`);
+};
+
+const renderErrorsInForm = (state, { feedback }, i18n) => {
+  if (!state.form.error.length && !state.form.isValid) {
+    return;
+  }
+
+  feedback.classList.add('text-danger');
+  feedback.textContent = i18n.t(`errors.${state.form.error}`);
 };
 
 const createButton = (post, i18n) => {
@@ -188,7 +197,11 @@ export default (elements, i18n, state) => onChange(state, (path) => {
       break;
 
     case 'loadingProcess.error':
-      renderErrors(state, elements, i18n);
+      renderErrorsInloadingProcess(state, elements, i18n);
+      break;
+
+    case 'form.error':
+      renderErrorsInForm(state, elements, i18n);
       break;
 
     case 'posts':

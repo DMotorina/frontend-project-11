@@ -32,12 +32,12 @@ const updatePosts = (state) => {
     .then(() => setTimeout(updatePosts, updateTime, state));
 };
 
-const validate = (url, urls) => {
+const validate = (url, feedIds) => {
   const schema = yup
     .string()
     .required()
     .url()
-    .notOneOf(urls);
+    .notOneOf(feedIds);
 
   return schema
     .validate(url)
@@ -58,24 +58,20 @@ const handleError = (error) => {
 };
 
 const loadData = (url, watchedState) => {
-  watchedState.form.isValid = true;
   watchedState.loadingProcess.status = 'sending';
-  watchedState.form.error = '';
   watchedState.loadingProcess.error = '';
 
   request(url)
     .then((response) => {
       const parser = new Parser(response.data.contents, url);
 
-      watchedState.form.isValid = true;
       watchedState.loadingProcess.status = 'success';
-      watchedState.form.error = '';
       watchedState.loadingProcess.error = '';
+
       watchedState.feeds.push(parser.feed);
       watchedState.posts.push(...parser.posts);
     })
     .catch((error) => {
-      watchedState.form.isValid = false;
       watchedState.loadingProcess.status = 'invalid';
       watchedState.loadingProcess.error = handleError(error);
     });
@@ -111,16 +107,18 @@ export default () => {
 
         const formData = new FormData(event.target);
         const url = (formData.get('url')).trim();
-        const urls = initialState.feeds.map((feed) => feed.id);
+        const feedIds = initialState.feeds.map(({ id }) => id);
 
-        validate(url, urls)
+        validate(url, feedIds)
           .then((error) => {
             if (error) {
               watchedState.form.isValid = false;
-              watchedState.loadingProcess.status = 'invalid';
-              watchedState.loadingProcess.error = handleError(error);
+              watchedState.form.error = handleError(error);
               return;
             }
+
+            watchedState.form.isValid = true;
+            watchedState.form.error = '';
 
             loadData(url, watchedState);
           });
