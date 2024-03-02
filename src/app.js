@@ -4,8 +4,8 @@ import i18next from 'i18next';
 import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
-import { initialState, updateTime } from './constants';
-import { request, customErrors } from './utils';
+import { initialState, customErrors, updateTime } from './constants';
+import request from './utils';
 
 const updatePosts = (state) => {
   const promises = state.feeds.map((element) => request(element.id)

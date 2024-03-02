@@ -8,18 +8,10 @@ const getStringProxiedUrl = (url) => {
   return resultUrl.toString();
 };
 
-export const request = (data) => axios({
+const request = (data) => axios({
   method: 'get',
   url: getStringProxiedUrl(data),
   timeout: updateRequest,
 });
 
-export const customErrors = {
-  string: {
-    url: () => 'urlError',
-    required: () => 'empty',
-  },
-  mixed: {
-    notOneOf: () => 'dublicateError',
-  },
-};
+export default request;

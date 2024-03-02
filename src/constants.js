@@ -15,6 +15,16 @@ export const initialState = {
   },
 };
 
+export const customErrors = {
+  string: {
+    url: () => 'urlError',
+    required: () => 'empty',
+  },
+  mixed: {
+    notOneOf: () => 'dublicateError',
+  },
+};
+
 export const updateTime = 5000;
 
 export const updateRequest = 10000;
