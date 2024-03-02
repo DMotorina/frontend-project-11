@@ -5,7 +5,7 @@ import watch from './view';
 import resources from './locales/index';
 import Parser from './parse';
 import { initialState, updateTime } from './constants';
-import { request, isURL, customErrors } from './utils';
+import { request, customErrors } from './utils';
 
 const updatePosts = (state) => {
   const promises = state.feeds.map((element) => request(element.id)
@@ -32,39 +32,6 @@ const updatePosts = (state) => {
     .then(() => setTimeout(updatePosts, updateTime, state));
 };
 
-const handleError = (error) => {
-  if (error.message.includes('Invalid URL')) {
-    return 'urlError';
-  }
-
-  if (error.isParsingError) {
-    return 'rssError';
-  }
-
-  if (axios.isAxiosError(error)) {
-    return 'networkError';
-  }
-
-  return error.message.key ?? 'unknown';
-};
-
-const loadData = (response, url, watchedState) => {
-  const parser = new Parser(response.data.contents, url);
-
-  if (parser.parseError) {
-    watchedState.form.isValid = false;
-    watchedState.loadingProcess.status = 'invalid';
-    watchedState.loadingProcess.error = 'rssError';
-  }
-
-  watchedState.form.isValid = true;
-  watchedState.loadingProcess.status = 'success';
-  watchedState.form.error = '';
-  watchedState.loadingProcess.error = '';
-  watchedState.feeds.push(parser.feed);
-  watchedState.posts.push(...parser.posts);
-};
-
 const validate = (url, urls) => {
   const schema = yup
     .string()
@@ -76,6 +43,42 @@ const validate = (url, urls) => {
     .validate(url)
     .then(() => null)
     .catch((error) => error.message);
+};
+
+const handleError = (error) => {
+  if (error.isParsingError) {
+    return 'rssError';
+  }
+
+  if (axios.isAxiosError(error)) {
+    return 'networkError';
+  }
+
+  return error ?? 'unknown';
+};
+
+const loadData = (url, watchedState) => {
+  watchedState.form.isValid = true;
+  watchedState.loadingProcess.status = 'sending';
+  watchedState.form.error = '';
+  watchedState.loadingProcess.error = '';
+
+  request(url)
+    .then((response) => {
+      const parser = new Parser(response.data.contents, url);
+
+      watchedState.form.isValid = true;
+      watchedState.loadingProcess.status = 'success';
+      watchedState.form.error = '';
+      watchedState.loadingProcess.error = '';
+      watchedState.feeds.push(parser.feed);
+      watchedState.posts.push(...parser.posts);
+    })
+    .catch((error) => {
+      watchedState.form.isValid = false;
+      watchedState.loadingProcess.status = 'invalid';
+      watchedState.loadingProcess.error = handleError(error);
+    });
 };
 
 export default () => {
@@ -111,37 +114,15 @@ export default () => {
         const urls = initialState.feeds.map((feed) => feed.id);
 
         validate(url, urls)
-          .then(() => {
-            if (watchedState.loadingProcess.enteredUrls.has(url)) {
+          .then((error) => {
+            if (error) {
               watchedState.form.isValid = false;
               watchedState.loadingProcess.status = 'invalid';
-              watchedState.loadingProcess.error = 'dublicateError';
+              watchedState.loadingProcess.error = handleError(error);
               return;
             }
 
-            if (isURL(url)) {
-              watchedState.loadingProcess.enteredUrls.add(url);
-            }
-
-            watchedState.form.isValid = true;
-            watchedState.loadingProcess.status = 'sending';
-            watchedState.form.error = '';
-            watchedState.loadingProcess.error = '';
-
-            request(url)
-              .then((response) => {
-                loadData(response, url, watchedState);
-              })
-              .catch((error) => {
-                watchedState.form.isValid = false;
-                watchedState.loadingProcess.status = 'invalid';
-                watchedState.loadingProcess.error = handleError(error);
-              });
-          })
-          .catch((error) => {
-            watchedState.form.isValid = false;
-            watchedState.loadingProcess.status = 'invalid';
-            watchedState.loadingProcess.error = handleError(error);
+            loadData(url, watchedState);
           });
       });
 

@@ -14,14 +14,12 @@ export const request = (data) => axios({
   timeout: updateRequest,
 });
 
-export const isURL = (url) => new URL(url);
-
 export const customErrors = {
   string: {
-    url: () => ({ key: 'urlError' }),
-    required: () => ({ key: 'empty' }),
+    url: () => 'urlError',
+    required: () => 'empty',
   },
   mixed: {
-    notOneOf: () => ({ key: 'dublicateError' }),
+    notOneOf: () => 'dublicateError',
   },
 };
